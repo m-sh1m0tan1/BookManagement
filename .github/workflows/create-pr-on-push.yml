@@ -37,7 +37,7 @@ jobs:
             exit 0
           fi
 
-          title="$(printf '%s\\n' "${COMMIT_MESSAGE}" | head -n 1 | cut -c1-256)"
+          title="$(printf '%s\n' "${COMMIT_MESSAGE}" | head -n 1 | cut -c1-256)"
           if [[ -z "${title}" ]]; then
             title="${HEAD_BRANCH}"
           fi
