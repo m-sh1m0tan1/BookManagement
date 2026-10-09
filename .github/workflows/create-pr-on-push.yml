@@ -1,0 +1,51 @@
+name: Push後にPRを作成
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  create-pull-request:
+    if: ${{ !github.event.deleted && github.event.head_commit != null }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 未作成のPRを作成
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          HEAD_BRANCH: ${{ github.ref_name }}
+          BASE_BRANCH: main
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          set -euo pipefail
+
+          existing_pr="$(gh api \
+            "repos/${REPOSITORY}/pulls" \
+            -f state=open \
+            -f head="${REPOSITORY_OWNER}:${HEAD_BRANCH}" \
+            -f base="${BASE_BRANCH}" \
+            --jq '.[0].html_url // empty')"
+
+          if [[ -n "${existing_pr}" ]]; then
+            echo "既に未解決のPRがあります: ${existing_pr}"
+            exit 0
+          fi
+
+          title="$(printf '%s\\n' "${COMMIT_MESSAGE}" | head -n 1 | cut -c1-256)"
+          if [[ -z "${title}" ]]; then
+            title="${HEAD_BRANCH}"
+          fi
+
+          gh api \
+            --method POST \
+            "repos/${REPOSITORY}/pulls" \
+            -f title="${title}" \
+            -f head="${HEAD_BRANCH}" \
+            -f base="${BASE_BRANCH}" \
+            -f body="このPRはブランチ ${HEAD_BRANCH} へのpushを検知して自動作成されました。"
