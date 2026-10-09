@@ -10,7 +10,7 @@ public class BorrowBook {
     private int id;
     private int borrowedUser;
     private int borrowedBook;
-    private LocalDateTime borrowAt;
+    private LocalDateTime borrowedAt;
     private LocalDate dueDate;
     private LocalDateTime returnedAt;
 }
