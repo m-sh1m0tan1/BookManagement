@@ -10,12 +10,14 @@ create table if not exists books (
     id serial primary key,
     name varchar(255) not null, -- 本の名前
     author varchar(255) not null, -- 著者
-    isbn varchar(13) -- ISBN
+    isbn varchar(13), -- ISBN
+    quantity integer not null, -- 本の冊数
 --     transcription varchar(255) not null,
 --     publisher varchar(255) not null, -- これ別でテーブル持ってそこからアクセスする方がいいかもしれない
+    check (quantity >= 0) -- 冊数0未満を弾く
 );
 
-create table if not exists borrow_books (
+create table if not exists loans ( -- 借りた記録
     id serial primary key,
     borrowed_user integer not null, -- 借りたユーザ
     borrowed_book integer not null, -- 借りた本
@@ -25,7 +27,3 @@ create table if not exists borrow_books (
     foreign key (borrowed_user) references users(id),
     foreign key (borrowed_book) references books(id)
 );
-
-create unique index if not exists uq_borrow_books_active_book
-    on borrow_books(borrowed_book)
-    where returned_at is null;

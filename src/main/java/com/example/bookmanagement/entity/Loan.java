@@ -3,14 +3,14 @@ package com.example.bookmanagement.entity;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
-public class BorrowBook {
+public class Loan {
     private int id;
     private int borrowedUser;
     private int borrowedBook;
-    private LocalDateTime borrowedAt;
+    private OffsetDateTime borrowedAt;
     private LocalDate dueDate;
-    private LocalDateTime returnedAt;
+    private OffsetDateTime returnedAt;
 }
