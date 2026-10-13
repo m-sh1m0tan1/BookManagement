@@ -31,6 +31,6 @@ public interface BookMapper {
     @Update("update books set name = #{name}, author = #{author}, isbn = #{isbn}, quantity = #{quantity} where id = #{id}")
     int updateBook(Book book); // 本の更新
 
-    @Delete("delete from books where id = #{id} and quantity = 0")
-    int deleteBookById(int id); // IDをもとに本を削除
+    @Update("update books set is_available = false where id = #{id} and quantity = 0")
+    int softDeleteBookById(int id); // IDをもとに本を削除
 }

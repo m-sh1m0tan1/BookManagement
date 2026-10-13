@@ -12,6 +12,7 @@ create table if not exists books (
     author varchar(255) not null, -- 著者
     isbn varchar(13), -- ISBN
     quantity integer not null, -- 本の冊数
+    is_available boolean default true not null, -- 本削除フラグ
 --     transcription varchar(255) not null,
 --     publisher varchar(255) not null, -- これ別でテーブル持ってそこからアクセスする方がいいかもしれない
     check (quantity >= 0) -- 冊数0未満を弾く
