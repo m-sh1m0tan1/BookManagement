@@ -1,5 +1,6 @@
 package com.example.bookmanagement.repository;
 
+import com.example.bookmanagement.dto.LoanWithBookDetail;
 import com.example.bookmanagement.entity.Loan;
 import com.example.bookmanagement.mapper.LoanMapper;
 import org.springframework.stereotype.Repository;
@@ -29,6 +30,10 @@ public class LoanRepository {
 
     public List<Loan> getUnReturnedLoanByBookId(int id) {
         return loanMapper.getUnReturnedLoanByBookId(id);
+    }
+
+    public List<LoanWithBookDetail> getLoanWithBookDetailByUserId(int userId) {
+        return loanMapper.getLoanWithBookDetailByUserId(userId);
     }
 
     public int insertLoan(Loan loan) {
