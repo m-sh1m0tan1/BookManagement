@@ -24,6 +24,10 @@ public class LoanRepository {
         return loanMapper.getLoanById(id);
     }
 
+    public Loan getLoanByIdForUpdate(int id) {
+        return loanMapper.getLoanByIdForUpdate(id);
+    }
+
     public List<Loan> getUnReturnedLoanByUserId(int id) {
         return loanMapper.getUnReturnedLoanByUserId(id);
     }

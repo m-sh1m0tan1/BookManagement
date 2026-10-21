@@ -5,15 +5,19 @@ import com.example.bookmanagement.exception.UserArgumentInvalidException;
 import com.example.bookmanagement.exception.UserNotFoundException;
 import com.example.bookmanagement.form.UserForm;
 import com.example.bookmanagement.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public User getUserByMail(String mail) {
@@ -34,16 +38,18 @@ public class UserService {
 
     public User insertUser(UserForm userForm)
     {
+        if (userForm == null) {
+            throw new UserArgumentInvalidException("入力された値が不正です");
+        }
         User user = new User();
-        if (userForm.getMail() == null || userForm.getMail().isEmpty() ||
-                userForm.getName() == null || userForm.getName().isEmpty() ||
-                userForm.getPlainPassword() == null || userForm.getPlainPassword().isEmpty()) {
+        if (userForm.getMail() == null || userForm.getMail().isBlank() ||
+                userForm.getName() == null || userForm.getName().isBlank() ||
+                userForm.getPlainPassword() == null || userForm.getPlainPassword().isBlank()) {
             throw new UserArgumentInvalidException("入力された値が不正です");
         }
         user.setMail(userForm.getMail());
         user.setName(userForm.getName());
-        user.setPassword("" // ここはSecurityConfigでパスワードハッシュ化アルゴリズムを設定してから書く
-        );
+        user.setPassword(passwordEncoder.encode(userForm.getPlainPassword()));
         if (userRepository.insertUser(user) != 1) {
             throw new RuntimeException("ユーザーの登録に失敗しました");
         }
@@ -52,10 +58,12 @@ public class UserService {
 
     @Transactional
     public User updateUser(UserForm userForm, int userId) {
-        User user = new User();
-        if (userForm.getMail() == null || userForm.getMail().isEmpty() ||
-                userForm.getName() == null || userForm.getName().isEmpty() ||
-                userForm.getPlainPassword() == null || userForm.getPlainPassword().isEmpty()) {
+        if (userForm == null) {
+            throw new UserArgumentInvalidException("入力された値が不正です");
+        }
+        if (userForm.getMail() == null || userForm.getMail().isBlank() ||
+                userForm.getName() == null || userForm.getName().isBlank() ||
+                userForm.getPlainPassword() == null || userForm.getPlainPassword().isBlank()) {
             throw new UserArgumentInvalidException("入力された値が不正です");
         }
 
@@ -64,13 +72,14 @@ public class UserService {
             throw new UserNotFoundException("ユーザーが見つかりませんでした");
         }
 
-        user.setMail(userForm.getMail());
-        user.setName(userForm.getName());
-        user.setPassword("" // ここはSecurityConfigでパスワードハッシュ化アルゴリズムを設定してから書く
-        );
-        return userRepository.updateUser(user);
+        targetUser.setId(userId);
+        targetUser.setMail(userForm.getMail());
+        targetUser.setName(userForm.getName());
+        targetUser.setPassword(passwordEncoder.encode(userForm.getPlainPassword()));
+        return userRepository.updateUser(targetUser);
     }
 
+    @Transactional
     public User updateIsAdminByUserId(int userId, boolean isAdmin) {
         User targetUser = userRepository.getUserByIdForUpdate(userId);
         if (targetUser == null) {

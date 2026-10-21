@@ -27,14 +27,14 @@ public class BookService {
     }
 
     public List<Book> getBooksByKeyword(String keyword) {
-        if (keyword == null || keyword.isEmpty()) {
+        if (keyword == null || keyword.isBlank()) {
             throw new BookArgumentInvalidException("キーワードが空です");
         }
         return bookRepository.getBooksByKeyword(keyword);
     }
 
     public List<Book> getAvailableBooksByKeyword(String keyword) {
-        if (keyword == null || keyword.isEmpty()) {
+        if (keyword == null || keyword.isBlank()) {
             throw new BookArgumentInvalidException("キーワードが空です");
         }
         return bookRepository.getAvailableBooksByKeyword(keyword);
@@ -45,7 +45,7 @@ public class BookService {
     }
 
     public List<Book> getBooksByAuthor(String author) {
-        if (author == null || author.isEmpty()) {
+        if (author == null || author.isBlank()) {
             throw new BookArgumentInvalidException("著者が空なため本が見つかりませんでした");
         }
         return bookRepository.getBooksByAuthor(author);
@@ -61,8 +61,8 @@ public class BookService {
 
     public Book insertBook(BookForm bookForm) {
         if (bookForm == null ||
-                bookForm.getName() == null || bookForm.getName().isEmpty() ||
-                bookForm.getAuthor() == null || bookForm.getAuthor().isEmpty() ||
+                bookForm.getName() == null || bookForm.getName().isBlank() ||
+                bookForm.getAuthor() == null || bookForm.getAuthor().isBlank() ||
                 bookForm.getQuantity() < 0) {
             throw new BookArgumentInvalidException("本の情報が不正です");
         }
@@ -72,16 +72,16 @@ public class BookService {
         book.setIsbn(bookForm.getIsbn() == null ? "" : bookForm.getIsbn());
         book.setQuantity(bookForm.getQuantity());
         if (bookRepository.insertBook(book) != 1) {
-            return null;
+            throw new RuntimeException("本の登録に失敗しました");
         }
-        return book;
+        return bookRepository.getBookById(book.getId());
     }
 
     @Transactional
     public Book updateBook(BookForm bookForm, int id) {
         if (bookForm == null ||
-                bookForm.getName() == null || bookForm.getName().isEmpty() ||
-                bookForm.getAuthor() == null || bookForm.getAuthor().isEmpty() ||
+                bookForm.getName() == null || bookForm.getName().isBlank() ||
+                bookForm.getAuthor() == null || bookForm.getAuthor().isBlank() ||
                 bookForm.getQuantity() < 0) {
             throw new BookArgumentInvalidException("本の情報が不正です");
         }
@@ -93,7 +93,12 @@ public class BookService {
         return bookRepository.updateBook(book);
     }
 
+    @Transactional
     public boolean softDeleteBookById(int id) {
+        if (getBookByIdForUpdate(id).getQuantity() != 0) {
+            throw new BookArgumentInvalidException("削除しようとしている本の在庫がまだあります");
+        }
+
         if (!bookRepository.softDeleteBookById(id)) {
             throw new BookNotFoundException("本が見つかりません");
         }

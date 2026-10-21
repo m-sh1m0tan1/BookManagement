@@ -10,6 +10,7 @@ public class Loan {
     private int id;
     private int borrowedUser;
     private int borrowedBook;
+    private boolean extended;
     private OffsetDateTime borrowedAt;
     private LocalDate dueDate;
     private OffsetDateTime returnedAt;
