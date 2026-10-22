@@ -1,6 +1,7 @@
 package com.example.bookmanagement.service;
 
 import com.example.bookmanagement.entity.User;
+import com.example.bookmanagement.exception.MailDuplicateException;
 import com.example.bookmanagement.exception.UserArgumentInvalidException;
 import com.example.bookmanagement.form.UserForm;
 import com.example.bookmanagement.repository.UserRepository;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,6 +48,22 @@ class UserServicePasswordTests {
     }
 
     @Test
+    void insertUserRejectsDuplicateMailWhenInsertDoesNotAddARow() {
+        userRepository.insertResult = 0;
+
+        assertThrows(MailDuplicateException.class,
+                () -> userService.insertUser(createForm("sample@example.invalid", "sample", "duplicate-test-46")));
+    }
+
+    @Test
+    void insertUserRejectsMailAndNameBeyondDatabaseLimits() {
+        assertThrows(UserArgumentInvalidException.class,
+                () -> userService.insertUser(createForm("m".repeat(256), "sample", "length-test-47")));
+        assertThrows(UserArgumentInvalidException.class,
+                () -> userService.insertUser(createForm("sample@example.invalid", "n".repeat(33), "length-test-48")));
+    }
+
+    @Test
     void updateUserPreservesIdAndAdminStatusWhileHashingPassword() {
         UserForm form = createForm("update-test-input-43");
         User existingUser = new User();
@@ -58,6 +76,17 @@ class UserServicePasswordTests {
         assertTrue(passwordEncoder.matches(form.getPlainPassword(), userRepository.savedUser.getPassword()));
         assertEquals(42, updatedUser.getId());
         assertTrue(updatedUser.isAdmin());
+    }
+
+    @Test
+    void updateUserConvertsDuplicateMailException() {
+        User existingUser = new User();
+        existingUser.setId(42);
+        userRepository.existingUser = existingUser;
+        userRepository.updateException = new DuplicateKeyException("duplicate mail");
+
+        assertThrows(MailDuplicateException.class,
+                () -> userService.updateUser(createForm("sample@example.invalid", "sample", "update-test-input-46"), 42));
     }
 
     @Test
@@ -119,6 +148,8 @@ class UserServicePasswordTests {
     private static class RecordingUserRepository extends UserRepository {
         private User savedUser;
         private User existingUser;
+        private int insertResult = 1;
+        private RuntimeException updateException;
 
         RecordingUserRepository() {
             super(null);
@@ -127,7 +158,7 @@ class UserServicePasswordTests {
         @Override
         public int insertUser(User user) {
             savedUser = user;
-            return 1;
+            return insertResult;
         }
 
         @Override
@@ -138,6 +169,9 @@ class UserServicePasswordTests {
         @Override
         public User updateUser(User user) {
             savedUser = user;
+            if (updateException != null) {
+                throw updateException;
+            }
             return user;
         }
     }

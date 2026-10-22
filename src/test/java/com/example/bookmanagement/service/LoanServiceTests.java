@@ -4,6 +4,7 @@ import com.example.bookmanagement.entity.Book;
 import com.example.bookmanagement.entity.Loan;
 import com.example.bookmanagement.entity.User;
 import com.example.bookmanagement.exception.LoanArgumentInvalidException;
+import com.example.bookmanagement.exception.LoanNotFoundException;
 import com.example.bookmanagement.repository.BookRepository;
 import com.example.bookmanagement.repository.LoanRepository;
 import com.example.bookmanagement.repository.UserRepository;
@@ -23,15 +24,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LoanServiceTests {
+    private static final int USER_ID = 1;
+
     @Test
     void updateDueDateAcceptsLoanDueToday() {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Tokyo"));
         Loan loan = new Loan();
         loan.setId(42);
         loan.setDueDate(today);
-        LoanService service = new LoanService(createExtensionRepository(loan), null, null);
+        LoanService service = new LoanService(createExtensionRepository(loan), createUserRepository(USER_ID), null);
 
-        Loan updatedLoan = service.updateDueDateById(42, today.plusDays(1));
+        Loan updatedLoan = service.updateDueDateById(42, today.plusDays(1), USER_ID);
 
         assertEquals(today.plusDays(1), updatedLoan.getDueDate());
         assertTrue(updatedLoan.isExtended());
@@ -43,10 +46,10 @@ class LoanServiceTests {
         Loan loan = new Loan();
         loan.setId(42);
         loan.setDueDate(today.minusDays(1));
-        LoanService service = new LoanService(createExtensionRepository(loan), null, null);
+        LoanService service = new LoanService(createExtensionRepository(loan), createUserRepository(USER_ID), null);
 
         assertThrows(LoanArgumentInvalidException.class,
-                () -> service.updateDueDateById(42, today.plusDays(1)));
+                () -> service.updateDueDateById(42, today.plusDays(1), USER_ID));
         assertEquals(today.minusDays(1), loan.getDueDate());
     }
 
@@ -58,11 +61,11 @@ class LoanServiceTests {
         Loan loan = new Loan();
         loan.setId(42);
         loan.setDueDate(currentDueDate);
-        LoanService service = new LoanService(createExtensionRepository(loan), null, null);
+        LoanService service = new LoanService(createExtensionRepository(loan), createUserRepository(USER_ID), null);
         LocalDate requestedDueDate = dayOffset == null ? null : currentDueDate.plusDays(dayOffset);
 
         assertThrows(LoanArgumentInvalidException.class,
-                () -> service.updateDueDateById(42, requestedDueDate));
+                () -> service.updateDueDateById(42, requestedDueDate, USER_ID));
         assertEquals(currentDueDate, loan.getDueDate());
     }
 
@@ -72,9 +75,9 @@ class LoanServiceTests {
         loan.setId(42);
         loan.setDueDate(LocalDate.now(ZoneId.of("Asia/Tokyo")).plusDays(7));
         LocalDate requestedDueDate = loan.getDueDate().plusDays(1);
-        LoanService service = new LoanService(createExtensionRepository(loan), null, null);
+        LoanService service = new LoanService(createExtensionRepository(loan), createUserRepository(USER_ID), null);
 
-        Loan updatedLoan = service.updateDueDateById(42, requestedDueDate);
+        Loan updatedLoan = service.updateDueDateById(42, requestedDueDate, USER_ID);
 
         assertEquals(requestedDueDate, updatedLoan.getDueDate());
     }
@@ -83,6 +86,7 @@ class LoanServiceTests {
     void updateDueDateRejectsReturnedLoanWithoutUpdatingIt() {
         Loan returnedLoan = new Loan();
         returnedLoan.setId(42);
+        returnedLoan.setBorrowedUser(USER_ID);
         returnedLoan.setDueDate(LocalDate.now(ZoneId.of("Asia/Tokyo")).plusDays(7));
         returnedLoan.setReturnedAt(OffsetDateTime.parse("2026-01-01T09:00:00+09:00"));
         LoanRepository repository = new LoanRepository(null) {
@@ -96,10 +100,10 @@ class LoanServiceTests {
                 throw new AssertionError("Returned loan must not be updated");
             }
         };
-        LoanService service = new LoanService(repository, null, null);
+        LoanService service = new LoanService(repository, createUserRepository(USER_ID), null);
 
         assertThrows(LoanArgumentInvalidException.class,
-                () -> service.updateDueDateById(42, returnedLoan.getDueDate().plusDays(1)));
+                () -> service.updateDueDateById(42, returnedLoan.getDueDate().plusDays(1), USER_ID));
     }
 
     @Test
@@ -109,10 +113,10 @@ class LoanServiceTests {
         loan.setId(42);
         loan.setDueDate(currentDueDate);
         loan.setExtended(true);
-        LoanService service = new LoanService(createExtensionRepository(loan), null, null);
+        LoanService service = new LoanService(createExtensionRepository(loan), createUserRepository(USER_ID), null);
 
         assertThrows(LoanArgumentInvalidException.class,
-                () -> service.updateDueDateById(42, currentDueDate.plusDays(1)));
+                () -> service.updateDueDateById(42, currentDueDate.plusDays(1), USER_ID));
         assertEquals(currentDueDate, loan.getDueDate());
     }
 
@@ -121,6 +125,7 @@ class LoanServiceTests {
         OffsetDateTime returnedAt = OffsetDateTime.parse("2026-01-01T09:00:00+09:00");
         Loan returnedLoan = new Loan();
         returnedLoan.setId(42);
+        returnedLoan.setBorrowedUser(USER_ID);
         returnedLoan.setReturnedAt(returnedAt);
         LoanRepository repository = new LoanRepository(null) {
             @Override
@@ -133,17 +138,97 @@ class LoanServiceTests {
                 throw new AssertionError("Returned loan must not be updated");
             }
         };
-        LoanService service = new LoanService(repository, null, null);
+        LoanService service = new LoanService(repository, createUserRepository(USER_ID), null);
 
-        assertThrows(LoanArgumentInvalidException.class, () -> service.updateReturnedAtById(42));
+        assertThrows(LoanArgumentInvalidException.class, () -> service.updateReturnedAtById(42, USER_ID));
         assertEquals(returnedAt, returnedLoan.getReturnedAt());
+    }
+
+    @Test
+    void updateReturnedAtRejectsAnotherUsersLoanWithoutUpdatingIt() {
+        Loan loan = new Loan();
+        loan.setId(42);
+        loan.setBorrowedUser(2);
+        LoanRepository repository = new LoanRepository(null) {
+            @Override
+            public Loan getLoanByIdForUpdate(int id) {
+                return loan;
+            }
+
+            @Override
+            public Loan updateReturnedAtById(int id) {
+                throw new AssertionError("Another user's loan must not be updated");
+            }
+        };
+        LoanService service = new LoanService(repository, createUserRepository(USER_ID), null);
+
+        assertThrows(LoanArgumentInvalidException.class,
+                () -> service.updateReturnedAtById(42, USER_ID));
+    }
+
+    @Test
+    void updateDueDateRejectsAnotherUsersLoanWithoutUpdatingIt() {
+        Loan loan = new Loan();
+        loan.setId(42);
+        loan.setBorrowedUser(2);
+        loan.setDueDate(LocalDate.now(ZoneId.of("Asia/Tokyo")).plusDays(7));
+        LoanRepository repository = new LoanRepository(null) {
+            @Override
+            public Loan getLoanByIdForUpdate(int id) {
+                return loan;
+            }
+
+            @Override
+            public Loan updateDueDateById(int id, LocalDate dueDate) {
+                throw new AssertionError("Another user's loan must not be updated");
+            }
+        };
+        LoanService service = new LoanService(repository, createUserRepository(USER_ID), null);
+
+        assertThrows(LoanArgumentInvalidException.class,
+                () -> service.updateDueDateById(42, loan.getDueDate().plusDays(1), USER_ID));
+    }
+
+    @Test
+    void updateReturnedAtReportsMissingLoan() {
+        LoanRepository repository = new LoanRepository(null) {
+            @Override
+            public Loan getLoanByIdForUpdate(int id) {
+                return null;
+            }
+        };
+        LoanService service = new LoanService(repository, createUserRepository(USER_ID), null);
+
+        assertThrows(LoanNotFoundException.class,
+                () -> service.updateReturnedAtById(42, USER_ID));
     }
 
     @Test
     void insertLoanRejectsNullInput() {
         LoanService service = new LoanService(null, null, null);
 
-        assertThrows(LoanArgumentInvalidException.class, () -> service.insertLoan(null));
+        assertThrows(LoanArgumentInvalidException.class, () -> service.insertLoan(null, USER_ID));
+    }
+
+    @Test
+    void insertLoanRejectsMismatchedBorrowerBeforeLockingRequestUser() {
+        List<Integer> lockedUserIds = new ArrayList<>();
+        UserRepository userRepository = new UserRepository(null) {
+            @Override
+            public User getUserByIdForUpdate(int id) {
+                lockedUserIds.add(id);
+                User user = new User();
+                user.setId(id);
+                return user;
+            }
+        };
+        Loan input = new Loan();
+        input.setBorrowedUser(2);
+        LoanService service = new LoanService(null, userRepository, null);
+
+        assertThrows(LoanArgumentInvalidException.class,
+                () -> service.insertLoan(input, USER_ID));
+        assertTrue(lockedUserIds.isEmpty());
     }
 
     @Test
@@ -178,7 +263,7 @@ class LoanServiceTests {
         input.setDueDate(LocalDate.of(2000, 1, 1));
         LocalDate earliestDueDate = LocalDate.now(ZoneId.of("Asia/Tokyo")).plusDays(14);
 
-        Loan createdLoan = createAvailableLoanService(repository).insertLoan(input);
+        Loan createdLoan = createAvailableLoanService(repository).insertLoan(input, USER_ID);
 
         LocalDate latestDueDate = LocalDate.now(ZoneId.of("Asia/Tokyo")).plusDays(14);
         assertTrue(!createdLoan.getDueDate().isBefore(earliestDueDate)
@@ -221,7 +306,7 @@ class LoanServiceTests {
         input.setBorrowedBook(2);
         input.setDueDate(LocalDate.of(2026, 1, 15));
 
-        Loan createdLoan = createAvailableLoanService(repository).insertLoan(input);
+        Loan createdLoan = createAvailableLoanService(repository).insertLoan(input, USER_ID);
 
         assertEquals(42, createdLoan.getId());
         assertEquals(borrowedAt, createdLoan.getBorrowedAt());
@@ -237,7 +322,7 @@ class LoanServiceTests {
         input.setBorrowedUser(1);
         input.setBorrowedBook(2);
 
-        assertThrows(LoanArgumentInvalidException.class, () -> service.insertLoan(input));
+        assertThrows(LoanArgumentInvalidException.class, () -> service.insertLoan(input, USER_ID));
         assertEquals(List.of("lock-user", "lock-book", "count-user"), calls);
     }
 
@@ -251,7 +336,7 @@ class LoanServiceTests {
         input.setBorrowedUser(1);
         input.setBorrowedBook(2);
 
-        assertThrows(LoanArgumentInvalidException.class, () -> service.insertLoan(input));
+        assertThrows(LoanArgumentInvalidException.class, () -> service.insertLoan(input, USER_ID));
         assertEquals(List.of("lock-user", "lock-book", "count-user", "count-book"), calls);
     }
 
@@ -265,13 +350,14 @@ class LoanServiceTests {
         input.setBorrowedUser(1);
         input.setBorrowedBook(2);
 
-        Loan createdLoan = service.insertLoan(input);
+        Loan createdLoan = service.insertLoan(input, USER_ID);
 
         assertEquals(42, createdLoan.getId());
         assertEquals(List.of("lock-user", "lock-book", "count-user", "count-book", "insert", "load"), calls);
     }
 
     private LoanRepository createExtensionRepository(Loan loan) {
+        loan.setBorrowedUser(USER_ID);
         return new LoanRepository(null) {
             @Override
             public Loan getLoanByIdForUpdate(int id) {
@@ -291,7 +377,9 @@ class LoanServiceTests {
         UserRepository userRepository = new UserRepository(null) {
             @Override
             public User getUserByIdForUpdate(int id) {
-                return new User();
+                User user = new User();
+                user.setId(id);
+                return user;
             }
         };
         Book availableBook = new Book();
@@ -305,13 +393,29 @@ class LoanServiceTests {
         return new LoanService(loanRepository, userRepository, bookRepository);
     }
 
+    private UserRepository createUserRepository(int userId) {
+        return new UserRepository(null) {
+            @Override
+            public User getUserByIdForUpdate(int id) {
+                if (id != userId) {
+                    return null;
+                }
+                User user = new User();
+                user.setId(id);
+                return user;
+            }
+        };
+    }
+
     private LoanService createLoanService(List<Loan> userLoans, Book book, List<Loan> bookLoans,
                                           List<String> calls) {
         UserRepository userRepository = new UserRepository(null) {
             @Override
             public User getUserByIdForUpdate(int id) {
                 calls.add("lock-user");
-                return new User();
+                User user = new User();
+                user.setId(id);
+                return user;
             }
         };
         BookRepository bookRepository = new BookRepository(null) {

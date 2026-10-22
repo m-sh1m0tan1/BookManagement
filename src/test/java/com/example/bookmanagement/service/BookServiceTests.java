@@ -66,6 +66,28 @@ class BookServiceTests {
     }
 
     @Test
+    void insertBookRejectsFieldsLongerThanDatabaseLimits() {
+        BookService service = createValidationService();
+        BookForm longName = createForm("n".repeat(256), "Sample Author");
+        BookForm longAuthor = createForm("Sample Book", "a".repeat(256));
+        BookForm longIsbn = createForm("Sample Book", "Sample Author");
+        longIsbn.setIsbn("1".repeat(14));
+
+        assertThrows(BookArgumentInvalidException.class, () -> service.insertBook(longName));
+        assertThrows(BookArgumentInvalidException.class, () -> service.insertBook(longAuthor));
+        assertThrows(BookArgumentInvalidException.class, () -> service.insertBook(longIsbn));
+    }
+
+    @Test
+    void insertBookRejectsWhitespaceOnlyIsbnLongerThanDatabaseLimit() {
+        BookService service = createValidationService();
+        BookForm form = createForm("Sample Book", "Sample Author");
+        form.setIsbn(" ".repeat(14));
+
+        assertThrows(BookArgumentInvalidException.class, () -> service.insertBook(form));
+    }
+
+    @Test
     void getBooksByKeywordRejectsWhitespaceOnlyKeyword() {
         assertThrows(BookArgumentInvalidException.class,
                 () -> createSearchService().getBooksByKeyword("   "));

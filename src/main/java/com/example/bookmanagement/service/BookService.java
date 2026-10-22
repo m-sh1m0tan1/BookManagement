@@ -60,10 +60,7 @@ public class BookService {
     }
 
     public Book insertBook(BookForm bookForm) {
-        if (bookForm == null ||
-                bookForm.getName() == null || bookForm.getName().isBlank() ||
-                bookForm.getAuthor() == null || bookForm.getAuthor().isBlank() ||
-                bookForm.getQuantity() < 0) {
+        if (isInvalidBookForm(bookForm)) {
             throw new BookArgumentInvalidException("本の情報が不正です");
         }
         Book book = new Book();
@@ -79,10 +76,7 @@ public class BookService {
 
     @Transactional
     public Book updateBook(BookForm bookForm, int id) {
-        if (bookForm == null ||
-                bookForm.getName() == null || bookForm.getName().isBlank() ||
-                bookForm.getAuthor() == null || bookForm.getAuthor().isBlank() ||
-                bookForm.getQuantity() < 0) {
+        if (isInvalidBookForm(bookForm)) {
             throw new BookArgumentInvalidException("本の情報が不正です");
         }
         Book book = getBookByIdForUpdate(id);
@@ -103,5 +97,21 @@ public class BookService {
             throw new BookNotFoundException("本が見つかりません");
         }
         return true;
+    }
+
+    private boolean isInvalidBookForm(BookForm bookForm) {
+        if (bookForm == null ||
+                bookForm.getName() == null || bookForm.getName().isBlank() ||
+                bookForm.getAuthor() == null || bookForm.getAuthor().isBlank() ||
+                bookForm.getQuantity() < 0) {
+            return true;
+        }
+        String isbn = bookForm.getIsbn();
+        if ((isbn != null && isbn.length() > 13) ||
+                bookForm.getName().length() > 255 ||
+                bookForm.getAuthor().length() > 255) {
+            return true;
+        }
+        return false;
     }
 }

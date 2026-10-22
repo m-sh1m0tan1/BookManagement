@@ -84,8 +84,8 @@ class LoanConcurrencyTests {
         User user = createUser();
         Book firstExistingBook = createBook(1);
         Book secondExistingBook = createBook(1);
-        loanService.insertLoan(createLoan(user.getId(), firstExistingBook.getId()));
-        loanService.insertLoan(createLoan(user.getId(), secondExistingBook.getId()));
+        loanService.insertLoan(createLoan(user.getId(), firstExistingBook.getId()), user.getId());
+        loanService.insertLoan(createLoan(user.getId(), secondExistingBook.getId()), user.getId());
 
         Book firstRequestedBook = createBook(1);
         Book secondRequestedBook = createBook(1);
@@ -121,7 +121,7 @@ class LoanConcurrencyTests {
                 throw new IllegalStateException("貸出リクエストの開始待ちがタイムアウトしました");
             }
             try {
-                loanService.insertLoan(createLoan(userId, bookId));
+                loanService.insertLoan(createLoan(userId, bookId), userId);
                 return true;
             } catch (LoanArgumentInvalidException e) {
                 return false;
