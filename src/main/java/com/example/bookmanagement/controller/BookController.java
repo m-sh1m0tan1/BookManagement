@@ -34,8 +34,8 @@ public class BookController {
         return ResponseEntity.ok(bookService.getBooksByKeyword(keyword));
     }
 
-    @GetMapping("/available/{keyword}")
-    public ResponseEntity<List<Book>> getAvailableBooksByKeyword(@PathVariable String keyword) {
+    @GetMapping("/available")
+    public ResponseEntity<List<Book>> getAvailableBooksByKeyword(@RequestParam(defaultValue = "") String keyword) {
         return ResponseEntity.ok(bookService.getAvailableBooksByKeyword(keyword));
     }
 
