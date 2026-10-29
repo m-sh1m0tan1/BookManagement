@@ -27,21 +27,19 @@ public class BookService {
     }
 
     public List<Book> getBooksByKeyword(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            throw new BookArgumentInvalidException("キーワードが空です");
+        if (keyword == null) {
+            throw new BookArgumentInvalidException("キーワードが指定されていません");
         }
-        return bookRepository.getBooksByKeyword(keyword);
+        String searchKeyword = keyword.isBlank() ? "" : keyword;
+        return bookRepository.getBooksByKeyword(searchKeyword);
     }
 
     public List<Book> getAvailableBooksByKeyword(String keyword) {
-        if (keyword == null || keyword.isBlank()) {
-            throw new BookArgumentInvalidException("キーワードが空です");
+        if (keyword == null) {
+            throw new BookArgumentInvalidException("キーワードが指定されていません");
         }
-        return bookRepository.getAvailableBooksByKeyword(keyword);
-    }
-
-    public List<Book> getAllBooks() {
-        return bookRepository.getAllBooks();
+        String searchKeyword = keyword.isBlank() ? "" : keyword;
+        return bookRepository.getAvailableBooksByKeyword(searchKeyword);
     }
 
     public List<Book> getBooksByAuthor(String author) {

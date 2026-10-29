@@ -26,10 +26,6 @@ public class BookRepository {
         return bookMapper.getAvailableBooksByKeyword(keyword);
     }
 
-    public List<Book> getAllBooks() {
-        return bookMapper.getAllBooks();
-    }
-
     public List<Book> getBooksByAuthor(String author) {
         return bookMapper.getBooksByAuthor(author);
     }
