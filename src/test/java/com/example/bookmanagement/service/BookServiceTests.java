@@ -7,6 +7,7 @@ import com.example.bookmanagement.form.BookForm;
 import com.example.bookmanagement.repository.BookRepository;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -88,15 +89,37 @@ class BookServiceTests {
     }
 
     @Test
-    void getBooksByKeywordRejectsWhitespaceOnlyKeyword() {
-        assertThrows(BookArgumentInvalidException.class,
-                () -> createSearchService().getBooksByKeyword("   "));
+    void getBooksByKeywordNormalizesEmptyAndWhitespaceOnlyKeywords() {
+        List<String> receivedKeywords = new ArrayList<>();
+        BookService service = createSearchService(receivedKeywords);
+
+        service.getBooksByKeyword("");
+        service.getBooksByKeyword(" \t ");
+
+        assertEquals(List.of("", ""), receivedKeywords);
     }
 
     @Test
-    void getAvailableBooksByKeywordRejectsWhitespaceOnlyKeyword() {
+    void getBooksByKeywordRejectsNullKeyword() {
         assertThrows(BookArgumentInvalidException.class,
-                () -> createSearchService().getAvailableBooksByKeyword("   "));
+                () -> createSearchService().getBooksByKeyword(null));
+    }
+
+    @Test
+    void getAvailableBooksByKeywordNormalizesEmptyAndWhitespaceOnlyKeywords() {
+        List<String> receivedKeywords = new ArrayList<>();
+        BookService service = createSearchService(receivedKeywords);
+
+        service.getAvailableBooksByKeyword("");
+        service.getAvailableBooksByKeyword(" \t ");
+
+        assertEquals(List.of("", ""), receivedKeywords);
+    }
+
+    @Test
+    void getAvailableBooksByKeywordRejectsNullKeyword() {
+        assertThrows(BookArgumentInvalidException.class,
+                () -> createSearchService().getAvailableBooksByKeyword(null));
     }
 
     @Test
@@ -161,14 +184,20 @@ class BookServiceTests {
     }
 
     private BookService createSearchService() {
+        return createSearchService(new ArrayList<>());
+    }
+
+    private BookService createSearchService(List<String> receivedKeywords) {
         BookRepository repository = new BookRepository(null) {
             @Override
             public List<Book> getBooksByKeyword(String keyword) {
+                receivedKeywords.add(keyword);
                 return List.of();
             }
 
             @Override
             public List<Book> getAvailableBooksByKeyword(String keyword) {
+                receivedKeywords.add(keyword);
                 return List.of();
             }
 

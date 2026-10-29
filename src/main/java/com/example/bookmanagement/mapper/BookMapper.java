@@ -16,9 +16,6 @@ public interface BookMapper {
     @Select("select b.* from books b where (b.name like CONCAT('%', #{keyword}, '%') or b.author like CONCAT('%', #{keyword}, '%')) and b.quantity > (select count(*) from loans l where l.borrowed_book = b.id and l.returned_at is null) and b.is_available = true")
     List<Book> getAvailableBooksByKeyword(String keyword); // 貸出可能な本をキーワードで検索
 
-    @Select("select * from books where is_available = true")
-    List<Book> getAllBooks(); // 全ての本を取得
-
     @Select("select * from books where author = #{author} and is_available = true")
     List<Book> getBooksByAuthor(String author); // 指定した著者名の本を取得
 
