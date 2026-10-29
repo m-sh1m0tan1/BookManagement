@@ -26,6 +26,7 @@ public interface BookMapper {
     Book getBookByIdForUpdate(int id); // IDをもとに本を取得(ロック)
 
     @Insert("insert into books(name, author, isbn, quantity) values(#{name}, #{author}, #{isbn}, #{quantity})")
+    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     int insertBook(Book book); // 新規本の追加
 
     @Update("update books set name = #{name}, author = #{author}, isbn = #{isbn}, quantity = #{quantity} where id = #{id}")

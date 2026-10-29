@@ -25,6 +25,7 @@ create table if not exists loans ( -- 借りた記録
     borrowed_at timestamptz default current_timestamp not null, -- 借りた日時
     due_date date not null, -- 返却期限日
     returned_at timestamptz default null, -- 返した日時
+    extended boolean not null default false, -- 返却期限延長済フラグ
     foreign key (borrowed_user) references users(id),
     foreign key (borrowed_book) references books(id)
 );

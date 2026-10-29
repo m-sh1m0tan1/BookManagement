@@ -1,10 +1,7 @@
 package com.example.bookmanagement.mapper;
 
 import com.example.bookmanagement.entity.User;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface UserMapper {
@@ -18,7 +15,8 @@ public interface UserMapper {
     @Select("select * from users where id = #{id} for update")
     User getUserByIdForUpdate(int id); // IDをもとにユーザ取得(ロック)
 
-    @Insert("insert into users (mail, name, password) values (#{mail}, #{name}, #{password})")
+    @Insert("insert into users (mail, name, password) values (#{mail}, #{name}, #{password}) on conflict (mail) do nothing") // on conflict (column) do nothingは重複エラーを無視するための構文
+    @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     int insertUser(User user); // ユーザ追加
 
     @Update("update users set mail = #{mail}, name = #{name}, password = #{password} where id = #{id}")
