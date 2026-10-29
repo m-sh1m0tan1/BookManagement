@@ -16,7 +16,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -95,7 +94,10 @@ public class UserService {
                 userForm.getPlainPassword() == null || userForm.getPlainPassword().isBlank()) {
             return true;
         }
-        if (userForm.getMail().length() > 255 || userForm.getName().length() > 32) {
+        if (userForm.getMail().length() > 255 ||
+            userForm.getName().length() > 32 ||
+            userForm.getPlainPassword().length() > 72 ||
+            userForm.getPlainPassword().codePoints().anyMatch(c -> c < 0x20 || c > 0x7e)) {
             return true;
         }
         return false;

@@ -48,6 +48,34 @@ class UserServicePasswordTests {
     }
 
     @Test
+    void insertUserAccepts72CharacterAsciiPasswordIncludingSymbolAndSpace() {
+        String password = "a".repeat(70) + "! ";
+        UserForm form = createForm(password);
+
+        userService.insertUser(form);
+
+        assertTrue(passwordEncoder.matches(password, userRepository.savedUser.getPassword()));
+    }
+
+    @Test
+    void insertUserRejectsPasswordLongerThan72CharactersOrNonAsciiCharacters() {
+        assertThrows(UserArgumentInvalidException.class,
+                () -> userService.insertUser(createForm("a".repeat(73))));
+        assertThrows(UserArgumentInvalidException.class,
+                () -> userService.insertUser(createForm("日本語password")));
+        assertThrows(UserArgumentInvalidException.class,
+                () -> userService.insertUser(createForm("password\t123")));
+    }
+
+    @Test
+    void updateUserRejectsPasswordLongerThan72CharactersOrNonAsciiCharacters() {
+        assertThrows(UserArgumentInvalidException.class,
+                () -> userService.updateUser(createForm("a".repeat(73)), 42));
+        assertThrows(UserArgumentInvalidException.class,
+                () -> userService.updateUser(createForm("日本語password"), 42));
+    }
+
+    @Test
     void insertUserRejectsDuplicateMailWhenInsertDoesNotAddARow() {
         userRepository.insertResult = 0;
 
