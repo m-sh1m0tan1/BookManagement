@@ -3,6 +3,7 @@ package com.example.bookmanagement.service;
 import com.example.bookmanagement.entity.Book;
 import com.example.bookmanagement.exception.BookArgumentInvalidException;
 import com.example.bookmanagement.exception.BookNotFoundException;
+import com.example.bookmanagement.exception.BookStockStillExistsException;
 import com.example.bookmanagement.form.BookForm;
 import com.example.bookmanagement.repository.BookRepository;
 import org.springframework.stereotype.Service;
@@ -88,7 +89,7 @@ public class BookService {
     @Transactional
     public boolean softDeleteBookById(int id) {
         if (getBookByIdForUpdate(id).getQuantity() != 0) {
-            throw new BookArgumentInvalidException("削除しようとしている本の在庫がまだあります");
+            throw new BookStockStillExistsException("削除しようとしている本の在庫がまだあります");
         }
 
         if (!bookRepository.softDeleteBookById(id)) {
