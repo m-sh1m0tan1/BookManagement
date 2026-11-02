@@ -1,7 +1,6 @@
 package com.example.bookmanagement.service;
 
 import com.example.bookmanagement.entity.Book;
-import com.example.bookmanagement.exception.BookStockStillExistsException;
 import com.example.bookmanagement.exception.BookArgumentInvalidException;
 import com.example.bookmanagement.exception.BookNotFoundException;
 import com.example.bookmanagement.form.BookForm;
@@ -142,7 +141,7 @@ class BookServiceTests {
         book.setQuantity(1);
         BookService service = new BookService(createDeletionRepository(book));
 
-        assertThrows(BookStockStillExistsException.class, () -> service.softDeleteBookById(42));
+        assertThrows(BookArgumentInvalidException.class, () -> service.softDeleteBookById(42));
     }
 
     private BookRepository createDeletionRepository(Book book) {

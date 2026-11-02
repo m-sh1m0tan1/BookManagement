@@ -5,10 +5,12 @@ import com.example.bookmanagement.exception.MailDuplicateException;
 import com.example.bookmanagement.exception.UserArgumentInvalidException;
 import com.example.bookmanagement.form.UserForm;
 import com.example.bookmanagement.repository.UserRepository;
+import com.example.bookmanagement.security.SecurityConfig;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UserServicePasswordTests {
+    private AnnotationConfigApplicationContext context;
     private RecordingUserRepository userRepository;
     private UserService userService;
     private PasswordEncoder passwordEncoder;
@@ -23,8 +26,17 @@ class UserServicePasswordTests {
     @BeforeEach
     void setUp() {
         userRepository = new RecordingUserRepository();
-        passwordEncoder = new BCryptPasswordEncoder();
-        userService = new UserService(userRepository, passwordEncoder);
+        context = new AnnotationConfigApplicationContext();
+        context.registerBean(UserRepository.class, () -> userRepository);
+        context.register(SecurityConfig.class, UserService.class);
+        context.refresh();
+        userService = context.getBean(UserService.class);
+        passwordEncoder = context.getBean(PasswordEncoder.class);
+    }
+
+    @AfterEach
+    void tearDown() {
+        context.close();
     }
 
     @Test
