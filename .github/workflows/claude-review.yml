@@ -49,4 +49,6 @@ jobs:
             指摘は日本語で簡潔に書き、gh pr comment でPRにまとめて投稿してください。
             問題がなければ、その旨を一言で投稿してください。
           claude_args: |
+            --model claude-sonnet-5-5
+            --effort medium
             --allowedTools "Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
