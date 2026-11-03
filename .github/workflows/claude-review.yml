@@ -1,0 +1,52 @@
+name: PRの自動レビュー
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: レビューするPRの番号
+        required: true
+        type: string
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  review:
+    if: ${{ github.event_name == 'workflow_dispatch' || (!github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', inputs.pr_number) }}
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+
+            このPRをレビューしてください。AGENTS.md の仕様と開発ルールを基準にします。
+            特に次の点を確認してください。
+            - 認証・権限: 他人の貸出の取得・返却・延長ができないか、管理者 API が保護されているか
+            - 貸出: 利用者の行→本の行の順のロック、同一トランザクション内の件数確認、所蔵数と3冊の上限
+            - 層の分離: Controller → Service → Repository → Mapper の呼び出し順を守っているか
+            - 秘密情報: パスワード、ハッシュ値、JWT がログや JSON レスポンスに出ていないか
+            - テスト: 変更した挙動に対するテストが追加されているか
+
+            指摘は日本語で簡潔に書き、gh pr comment でPRにまとめて投稿してください。
+            問題がなければ、その旨を一言で投稿してください。
+          claude_args: |
+            --allowedTools "Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"

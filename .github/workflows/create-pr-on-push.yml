@@ -6,6 +6,7 @@ on:
       - main
 
 permissions:
+  actions: write
   contents: read
   pull-requests: write
 
@@ -38,10 +39,17 @@ jobs:
 
           title="${HEAD_BRANCH}"
 
-          gh api \
+          pr_number="$(gh api \
             --method POST \
             "repos/${REPOSITORY}/pulls" \
             -f title="${title}" \
             -f head="${HEAD_BRANCH}" \
             -f base="${BASE_BRANCH}" \
-            -f body="このPRはブランチ ${HEAD_BRANCH} へのpushを検知して自動作成されました。"
+            -f body="このPRはブランチ ${HEAD_BRANCH} へのpushを検知して自動作成されました。" \
+            --jq '.number')"
+
+          # GITHUB_TOKEN で作成したPRは pull_request イベントを発火しないため、レビューを直接起動する
+          gh workflow run claude-review.yml \
+            --repo "${REPOSITORY}" \
+            --ref "${BASE_BRANCH}" \
+            -f pr_number="${pr_number}"
