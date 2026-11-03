@@ -1,9 +1,12 @@
 package com.example.bookmanagement.security;
 
+import com.example.bookmanagement.auth.CustomUserDetails;
 import com.example.bookmanagement.auth.JwtAuthenticationFilter;
 import com.example.bookmanagement.auth.JwtService;
 import com.example.bookmanagement.controller.BookController;
+import com.example.bookmanagement.entity.User;
 import com.example.bookmanagement.service.BookService;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -47,6 +50,19 @@ class JwtAuthenticationFilterTests {
         when(jwtService.getMailFromToken("bad-token")).thenThrow(new IllegalArgumentException("bad"));
 
         mockMvc.perform(get("/api/books").header("Authorization", "Bearer bad-token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void tokenThatFailsValidationReturns401() throws Exception {
+        User user = new User();
+        user.setMail("reader@example.test");
+        when(jwtService.getMailFromToken("expired-token")).thenReturn("reader@example.test");
+        when(userDetailsService.loadUserByUsername("reader@example.test")).thenReturn(new CustomUserDetails(user));
+        when(jwtService.validateToken("expired-token", "reader@example.test"))
+                .thenThrow(new ExpiredJwtException(null, null, "expired"));
+
+        mockMvc.perform(get("/api/books").header("Authorization", "Bearer expired-token"))
                 .andExpect(status().isUnauthorized());
     }
 

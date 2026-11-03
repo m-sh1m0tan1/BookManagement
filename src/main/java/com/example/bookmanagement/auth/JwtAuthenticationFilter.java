@@ -1,5 +1,6 @@
 package com.example.bookmanagement.auth;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -57,8 +58,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
-            } catch (UsernameNotFoundException e) {
-                logger.warn("JWT subject user not found", e);
+            } catch (UsernameNotFoundException | JwtException e) {
+                logger.warn("JWT subject user not found or token invalid", e);
             }
         }
         filterChain.doFilter(request, response);
