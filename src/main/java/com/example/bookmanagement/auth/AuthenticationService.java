@@ -12,12 +12,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.regex.Pattern;
+
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private static final Pattern MAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+
 
     public AuthenticationService(UserRepository userRepository, AuthenticationManager authenticationManager, JwtService jwtService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -85,6 +89,7 @@ public class AuthenticationService {
         }
 
         if (user.getMail().length() > 255 ||
+            !MAIL_PATTERN.matcher(user.getMail()).matches() ||
             user.getName().length() > 32 ||
             user.getPassword().length() > 72 ||
             user.getPassword().codePoints()

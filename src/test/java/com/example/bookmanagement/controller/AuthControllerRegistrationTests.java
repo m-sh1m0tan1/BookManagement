@@ -9,6 +9,8 @@ import com.example.bookmanagement.exception.handler.DuplicateExceptionHandler;
 import com.example.bookmanagement.repository.UserRepository;
 import com.example.bookmanagement.security.SecurityConfig;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -51,6 +53,15 @@ class AuthControllerRegistrationTests {
         mockMvc.perform(register("", "Reader", "password"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith("application/json"))
+                .andExpect(jsonPath("$.resource").value("User Argument Invalid"));
+        verify(userRepository, never()).insertUser(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"abc", "abc@", "@example.test", "a@b", "a b@example.test", " a@example.test", "a@@example.test"})
+    void malformedMailReturns400(String mail) throws Exception {
+        mockMvc.perform(register(mail, "Reader", "password"))
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.resource").value("User Argument Invalid"));
         verify(userRepository, never()).insertUser(any());
     }
