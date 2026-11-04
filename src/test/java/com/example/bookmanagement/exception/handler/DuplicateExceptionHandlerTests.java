@@ -16,6 +16,6 @@ class DuplicateExceptionHandlerTests {
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals("Mail", response.getBody().getResource());
-        assertEquals("Mail Duplicate", response.getBody().getMessage());
+        assertEquals("メールアドレスが既に登録されています", response.getBody().getMessage());
     }
 }

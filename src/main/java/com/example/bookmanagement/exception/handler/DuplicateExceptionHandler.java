@@ -16,7 +16,7 @@ public class DuplicateExceptionHandler {
         DuplicateErrorResponse response = new DuplicateErrorResponse();
         if (e instanceof MailDuplicateException) {
             response.setResource("Mail");
-            response.setMessage("Mail Duplicate");
+            response.setMessage(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
