@@ -46,6 +46,21 @@ public class LoanService {
         return loan;
     }
 
+    public Loan getLoanById(int id, int userId, boolean isAdmin) {
+        Loan loan = getLoanById(id);
+        if (!isAdmin && loan.getBorrowedUser() != userId) {
+            throw new LoanNotFoundException("貸出記録が見つかりません");
+        }
+        return loan;
+    }
+
+    public List<LoanWithBookDetail> getLoanWithBookDetails(boolean overdue) {
+        if (overdue) {
+            return loanRepository.getOverdueLoanWithBookDetail(LocalDate.now(ZoneId.of("Asia/Tokyo")));
+        }
+        return loanRepository.getAllLoanWithBookDetail();
+    }
+
     public List<Loan> getUnReturnedLoanByUserId(int id) {
         if (userRepository.getUserById(id) == null) {
             throw new UserNotFoundException("ユーザが見つかりません");

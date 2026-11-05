@@ -16,6 +16,14 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
+    public int getId() {
+        return user.getId();
+    }
+
+    public boolean isAdmin() {
+        return user.isAdmin();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
         return List.of(new SimpleGrantedAuthority(

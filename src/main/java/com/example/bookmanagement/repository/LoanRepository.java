@@ -40,6 +40,14 @@ public class LoanRepository {
         return loanMapper.getLoanWithBookDetailByUserId(userId);
     }
 
+    public List<LoanWithBookDetail> getAllLoanWithBookDetail() {
+        return loanMapper.getAllLoanWithBookDetail();
+    }
+
+    public List<LoanWithBookDetail> getOverdueLoanWithBookDetail(LocalDate today) {
+        return loanMapper.getOverdueLoanWithBookDetail(today);
+    }
+
     public int insertLoan(Loan loan) {
         return loanMapper.insertLoan(loan);
     }
