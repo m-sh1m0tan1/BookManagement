@@ -28,6 +28,12 @@ public interface LoanMapper {
     @Select("SELECT l.id, l.borrowed_user AS user_id, u.name AS user_name, l.borrowed_book AS book_id, b.name AS book_name, b.author AS book_author, (b.is_available AND b.quantity > (SELECT COUNT(*) FROM loans active WHERE active.borrowed_book = b.id AND active.returned_at IS NULL)) AS book_borrowable, NOT b.is_available AS book_deleted, l.borrowed_at, l.due_date, l.returned_at FROM loans l JOIN books b ON b.id = l.borrowed_book JOIN users u ON u.id = l.borrowed_user WHERE l.borrowed_user = #{userId}")
     List<LoanWithBookDetail> getLoanWithBookDetailByUserId(int userId); // ユーザIDをもとに貸出記録とその書籍の詳細を取得
 
+    @Select("SELECT l.id, l.borrowed_user AS user_id, u.name AS user_name, l.borrowed_book AS book_id, b.name AS book_name, b.author AS book_author, (b.is_available AND b.quantity > (SELECT COUNT(*) FROM loans active WHERE active.borrowed_book = b.id AND active.returned_at IS NULL)) AS book_borrowable, NOT b.is_available AS book_deleted, l.borrowed_at, l.due_date, l.returned_at FROM loans l JOIN books b ON b.id = l.borrowed_book JOIN users u ON u.id = l.borrowed_user ORDER BY l.id")
+    List<LoanWithBookDetail> getAllLoanWithBookDetail(); // 全貸出記録とその書籍の詳細を取得
+
+    @Select("SELECT l.id, l.borrowed_user AS user_id, u.name AS user_name, l.borrowed_book AS book_id, b.name AS book_name, b.author AS book_author, (b.is_available AND b.quantity > (SELECT COUNT(*) FROM loans active WHERE active.borrowed_book = b.id AND active.returned_at IS NULL)) AS book_borrowable, NOT b.is_available AS book_deleted, l.borrowed_at, l.due_date, l.returned_at FROM loans l JOIN books b ON b.id = l.borrowed_book JOIN users u ON u.id = l.borrowed_user WHERE l.returned_at IS NULL AND l.due_date < #{today} ORDER BY l.due_date, l.id")
+    List<LoanWithBookDetail> getOverdueLoanWithBookDetail(LocalDate today); // 基準日より前に期限が切れた未返却の貸出記録を取得
+
     @Insert("insert into loans (borrowed_user, borrowed_book, due_date) values (#{borrowedUser}, #{borrowedBook}, #{dueDate})")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     int insertLoan(Loan loan); // 貸出記録の挿入

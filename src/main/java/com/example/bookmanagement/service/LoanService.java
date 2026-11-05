@@ -46,6 +46,21 @@ public class LoanService {
         return loan;
     }
 
+    public Loan getLoanById(int id, int userId, boolean isAdmin) {
+        Loan loan = getLoanById(id);
+        if (!isAdmin && loan.getBorrowedUser() != userId) {
+            throw new LoanNotFoundException("貸出記録が見つかりません");
+        }
+        return loan;
+    }
+
+    public List<LoanWithBookDetail> getLoanWithBookDetails(boolean overdue) {
+        if (overdue) {
+            return loanRepository.getOverdueLoanWithBookDetail(LocalDate.now(ZoneId.of("Asia/Tokyo")));
+        }
+        return loanRepository.getAllLoanWithBookDetail();
+    }
+
     public List<Loan> getUnReturnedLoanByUserId(int id) {
         if (userRepository.getUserById(id) == null) {
             throw new UserNotFoundException("ユーザが見つかりません");
@@ -120,7 +135,7 @@ public class LoanService {
         Loan loan = loanRepository.getLoanByIdForUpdate(loanId);
         boolean isLoanIssuedUserMatched = isLoanIssuedUserMatched(loanId, userId);
         if (!isLoanIssuedUserMatched) {
-            throw new LoanArgumentInvalidException("不正なリクエストが送信されました");
+            throw new LoanNotFoundException("貸出記録が見つかりません");
         }
 
         if (loan.getReturnedAt() != null) {
@@ -134,7 +149,7 @@ public class LoanService {
         Loan loan = loanRepository.getLoanByIdForUpdate(loanId);
         boolean isLoanIssuedUserMatched = isLoanIssuedUserMatched(loanId, userId);
         if (!isLoanIssuedUserMatched) {
-            throw new LoanArgumentInvalidException("不正なリクエストが送信されました");
+            throw new LoanNotFoundException("貸出記録が見つかりません");
         }
         if (loan.getReturnedAt() != null) {
             throw new LoanArgumentInvalidException("貸出記録が返却済みです");

@@ -162,7 +162,7 @@ class LoanServiceTests {
         };
         LoanService service = new LoanService(repository, createUserRepository(USER_ID), null);
 
-        assertThrows(LoanArgumentInvalidException.class,
+        assertThrows(LoanNotFoundException.class,
                 () -> service.updateReturnedAtById(42, USER_ID));
     }
 
@@ -185,7 +185,7 @@ class LoanServiceTests {
         };
         LoanService service = new LoanService(repository, createUserRepository(USER_ID), null);
 
-        assertThrows(LoanArgumentInvalidException.class,
+        assertThrows(LoanNotFoundException.class,
                 () -> service.updateDueDateById(42, loan.getDueDate().plusDays(1), USER_ID));
     }
 
