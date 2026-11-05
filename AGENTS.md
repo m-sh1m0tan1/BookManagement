@@ -36,7 +36,7 @@ AI エージェントは `src/main/` 配下を閲覧だけにとどめ、変更�
 
 ## プロジェクトの構成
 
-Java 17、Spring Boot 4、Spring MVC、MyBatis、PostgreSQL を使う単一モジュールのアプリ。現在は起動クラス、Entity、Form、DTO、Mapper、Repository、Service、例外処理、SecurityConfig、DB 接続設定、初期スキーマがある。Controller は未実装。SecurityConfig には `PasswordEncoder` の Bean があり、JWT の発行・検証による認証処理は未実装。
+Java 17、Spring Boot 4、Spring MVC、MyBatis、PostgreSQL を使う単一モジュールのアプリ。現在は起動クラス、Entity、Form、DTO、Mapper、Repository、Service、Controller、例外処理、JWT による認証（`auth/`）、SecurityConfig、`src/main/resources/static/` の画面（HTML・CSS・素の JavaScript）、DB 接続設定、初期スキーマがある。JWT は `Authorization` ヘッダーで受け取る。画面は JWT を `sessionStorage` に保存して送り、ログアウトは画面側で破棄するだけで、サーバー側の失効は未実装。
 
 - `src/main/java/com/example/bookmanagement/`：アプリのコード。起動クラスは `BookManagementApplication`。Spring が検出できるよう、追加するコンポーネントはこのパッケージ配下に置く。
   - Controller、Service、Repository、Mapper をこのパッケージ配下に配置し、それぞれ通信、業務処理、データの保存・取得、SQL の実行を担当する。
