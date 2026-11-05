@@ -5,6 +5,7 @@ import com.example.bookmanagement.dto.DueDateRequest;
 import com.example.bookmanagement.dto.LoanRequest;
 import com.example.bookmanagement.dto.LoanWithBookDetail;
 import com.example.bookmanagement.entity.Loan;
+import com.example.bookmanagement.exception.LoanArgumentInvalidException;
 import com.example.bookmanagement.service.LoanService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -42,6 +43,9 @@ public class LoanController {
     public ResponseEntity<Loan> insertLoan(@RequestBody LoanRequest request,
                                            @AuthenticationPrincipal CustomUserDetails principal,
                                            UriComponentsBuilder uriComponentsBuilder) {
+        if (request == null || request.getBookId() == null) {
+            throw new LoanArgumentInvalidException("本のIDが指定されていません");
+        }
         Loan loan = new Loan();
         loan.setBorrowedUser(principal.getId());
         loan.setBorrowedBook(request.getBookId());

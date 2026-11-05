@@ -135,7 +135,7 @@ public class LoanService {
         Loan loan = loanRepository.getLoanByIdForUpdate(loanId);
         boolean isLoanIssuedUserMatched = isLoanIssuedUserMatched(loanId, userId);
         if (!isLoanIssuedUserMatched) {
-            throw new LoanArgumentInvalidException("不正なリクエストが送信されました");
+            throw new LoanNotFoundException("貸出記録が見つかりません");
         }
 
         if (loan.getReturnedAt() != null) {
@@ -149,7 +149,7 @@ public class LoanService {
         Loan loan = loanRepository.getLoanByIdForUpdate(loanId);
         boolean isLoanIssuedUserMatched = isLoanIssuedUserMatched(loanId, userId);
         if (!isLoanIssuedUserMatched) {
-            throw new LoanArgumentInvalidException("不正なリクエストが送信されました");
+            throw new LoanNotFoundException("貸出記録が見つかりません");
         }
         if (loan.getReturnedAt() != null) {
             throw new LoanArgumentInvalidException("貸出記録が返却済みです");

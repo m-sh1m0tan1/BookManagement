@@ -135,6 +135,17 @@ class LoanControllerTests {
     }
 
     @Test
+    void insertLoanWithoutBookIdReturnsBadRequest() throws Exception {
+        mockMvc.perform(post("/api/loans")
+                        .with(principal(false))
+                        .contentType("application/json")
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
+
+        verify(loanService, never()).insertLoan(any(Loan.class), anyInt());
+    }
+
+    @Test
     void returnLoanUsesPrincipalUserId() throws Exception {
         when(loanService.updateReturnedAtById(LOAN_ID, USER_ID)).thenReturn(loan());
 
