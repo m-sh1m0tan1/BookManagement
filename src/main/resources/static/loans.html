@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>自分の貸出 - 共有図書貸出管理</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="site-header">
+    <div class="inner">
+        <h1 class="site-title">共有図書貸出管理</h1>
+        <nav class="site-nav" aria-label="メインメニュー">
+            <a href="/books.html">本を探す</a>
+            <a href="/loans.html" aria-current="page">自分の貸出</a>
+            <a href="/admin.html" id="admin-link" hidden>管理</a>
+            <button type="button" id="logout-button" class="secondary small">ログアウト</button>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <h2>自分の貸出</h2>
+    <p class="lead">未返却は同時に3冊までです。返却期限の当日までは期限内、翌日から延滞になります。延長は1件につき1回、期限当日まで申請できます。</p>
+    <p id="message" class="message" role="alert"></p>
+
+    <h3>未返却</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>書名</th>
+                <th>著者</th>
+                <th>貸出日</th>
+                <th>返却期限</th>
+                <th>状態</th>
+                <th><span class="visually-hidden">操作</span></th>
+            </tr>
+            </thead>
+            <tbody id="current-loans" aria-live="polite">
+            <tr>
+                <td class="empty" colspan="6">読み込み中...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3 class="section-gap">返却済み</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+            <tr>
+                <th>書名</th>
+                <th>著者</th>
+                <th>貸出日</th>
+                <th>返却期限</th>
+                <th>返却日</th>
+            </tr>
+            </thead>
+            <tbody id="returned-loans" aria-live="polite">
+            <tr>
+                <td class="empty" colspan="5">読み込み中...</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<dialog id="extend-dialog" aria-labelledby="extend-title">
+    <h3 id="extend-title">貸出期限の延長</h3>
+    <form id="extend-form" novalidate>
+        <p id="extend-target"></p>
+        <div class="field">
+            <label for="extend-due-date">新しい返却期限</label>
+            <input type="date" id="extend-due-date" name="dueDate" required>
+            <p class="hint">現在の期限より後の日付を選んでください。延長は1回までです。</p>
+        </div>
+        <div class="actions">
+            <button type="submit">延長する</button>
+            <button type="button" id="extend-cancel" class="secondary">キャンセル</button>
+        </div>
+    </form>
+</dialog>
+<script src="/js/api.js"></script>
+<script src="/js/loans.js"></script>
+</body>
+</html>

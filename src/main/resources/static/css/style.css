@@ -1,0 +1,399 @@
+:root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --text: #1f2933;
+    --muted: #616e7c;
+    --border: #d9dee3;
+    --primary: #2457c5;
+    --primary-hover: #1c46a0;
+    --danger: #b42318;
+    --warn-bg: #fff4e5;
+    --warn-text: #8a4b00;
+    --ok-bg: #e6f4ea;
+    --ok-text: #1e6b34;
+    --ng-bg: #fdeaea;
+    --ng-text: #9b1c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #14181d;
+        --surface: #1d232a;
+        --text: #e6e9ed;
+        --muted: #9aa5b1;
+        --border: #34404c;
+        --primary: #6c9bff;
+        --primary-hover: #8fb2ff;
+        --danger: #ff8a80;
+        --warn-bg: #3a2c12;
+        --warn-text: #ffcf8a;
+        --ok-bg: #16301f;
+        --ok-text: #8fdca5;
+        --ng-bg: #3b1a1a;
+        --ng-text: #ffb3b3;
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+    line-height: 1.6;
+}
+
+/* ヘッダー・ナビゲーション */
+.site-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.site-header .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 12px 16px;
+}
+
+.site-title {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+    margin-left: auto;
+}
+
+.site-nav a {
+    color: var(--text);
+    text-decoration: none;
+    padding: 4px 2px;
+    border-bottom: 2px solid transparent;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
+    border-bottom-color: var(--primary);
+}
+
+/* 本文 */
+main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+}
+
+h2 {
+    margin: 0 0 16px;
+    font-size: 1.3rem;
+}
+
+h3 {
+    margin: 0 0 12px;
+    font-size: 1.05rem;
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    align-items: start;
+}
+
+.card-grid .card {
+    margin-bottom: 0;
+}
+
+.lead {
+    margin: 0 0 24px;
+    color: var(--muted);
+}
+
+/* フォーム */
+.field {
+    margin-bottom: 14px;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.field .hint {
+    margin: 2px 0 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="date"] {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+}
+
+input:focus-visible,
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.inline-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 12px 16px;
+}
+
+.inline-form .field {
+    margin-bottom: 0;
+    flex: 1 1 220px;
+}
+
+.inline-form .check {
+    flex: 0 0 auto;
+    padding-bottom: 8px;
+}
+
+.check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ボタン */
+button,
+.button {
+    display: inline-block;
+    padding: 8px 16px;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    background: var(--primary);
+    color: #ffffff;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover {
+    background: var(--primary-hover);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button.secondary {
+    background: transparent;
+    color: var(--primary);
+}
+
+button.secondary:hover {
+    background: var(--bg);
+}
+
+button.danger {
+    background: transparent;
+    border-color: var(--danger);
+    color: var(--danger);
+}
+
+button.small {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* メッセージ */
+.message {
+    margin: 0 0 16px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    background: var(--warn-bg);
+    color: var(--warn-text);
+}
+
+.message:empty {
+    display: none;
+}
+
+.message.error {
+    background: var(--ng-bg);
+    color: var(--ng-text);
+}
+
+.message.success {
+    background: var(--ok-bg);
+    color: var(--ok-text);
+}
+
+/* テーブル */
+.table-wrap {
+    overflow-x: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 640px;
+}
+
+th,
+td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    font-size: 0.85rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+td.num,
+th.num {
+    text-align: right;
+}
+
+td.empty {
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+}
+
+td.row-actions {
+    white-space: nowrap;
+}
+
+td.row-actions button + button {
+    margin-left: 6px;
+}
+
+/* 状態バッジ */
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.badge.ok {
+    background: var(--ok-bg);
+    color: var(--ok-text);
+}
+
+.badge.ng {
+    background: var(--ng-bg);
+    color: var(--ng-text);
+}
+
+.badge.warn {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+}
+
+/* ダイアログ */
+dialog {
+    width: min(480px, calc(100% - 32px));
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+dl.detail {
+    display: grid;
+    grid-template-columns: 6em 1fr;
+    gap: 6px 12px;
+    margin: 0 0 8px;
+}
+
+dl.detail dt {
+    color: var(--muted);
+}
+
+dl.detail dd {
+    margin: 0;
+}
+
+.section-gap {
+    margin-top: 40px;
+}
+
+/* 認証画面 */
+.auth-main {
+    max-width: 900px;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 600px) {
+    .site-nav {
+        margin-left: 0;
+    }
+}
